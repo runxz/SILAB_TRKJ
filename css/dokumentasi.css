@@ -1,0 +1,100 @@
+/* Container */
+.dokumentasi-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Documentation Card */
+.dokumentasi-card {
+    display: flex;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 90%;
+    max-width: 800px;
+    transition: transform 0.2s;
+}
+
+.dokumentasi-card:hover {
+    transform: scale(1.03);
+}
+
+/* Image */
+.dokumentasi-img {
+    width: 250px;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* Content */
+.dokumentasi-content {
+    padding: 15px;
+    flex: 1;
+}
+
+.dokumentasi-content h2 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.date {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.dokumentasi-content p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.search-form {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.search-form input {
+    padding: 10px;
+    width: 60%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-form button {
+    padding: 10px 15px;
+    background-color: #0A1F50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background-color: #0A1F50;
+}
+
+.no-results {
+    text-align: center;
+    font-size: 18px;
+    color: gray;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dokumentasi-card {
+        flex-direction: column;
+    }
+
+    .dokumentasi-img {
+        width: 100%;
+        height: 200px;
+    }
+}

@@ -1,0 +1,109 @@
+/* Container for all modules */
+.modul-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center-align cards */
+    gap: 20px; /* Spacing between cards */
+    padding: 20px;
+}
+
+/* Individual Module Card */
+.modul-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px; /* Consistent width */
+    min-height: 250px; /* Ensures all cards are equal height */
+    text-align: left; 
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Keep button at the bottom */
+}
+
+/* Alternating Colors */
+.modul-card:nth-child(even) { background: #dbeafe; } /* Light Blue */
+.modul-card:nth-child(odd) { background: #dcfce7; } /* Light Green */
+
+/* Background Icon */
+.icon-bg {
+    position: absolute;
+    font-size: 80px;
+    color: rgba(0, 0, 0, 0.1);
+    top: 10px;
+    right: 10px;
+}
+
+/* Title Styling */
+.modul-card h2 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Paragraph Styling */
+.modul-card p {
+    font-size: 14px;
+    margin: 5px 0;
+    color: #555;
+}
+
+/* Strong for Labels */
+.modul-card p strong {
+    color: #222;
+}
+
+/* Download Button */
+.btn-download {
+    text-align: center;
+    padding: 10px;
+    background-color: #0A1F50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-top: auto;
+    display: block;
+}
+
+.btn-download:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    .modul-container {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+
+/* Form Pencarian */
+.search-form {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-form input {
+    padding: 10px;
+    width: 60%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.search-form button {
+    padding: 10px;
+    background: #0A1F50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background: #0056b3;
+}
