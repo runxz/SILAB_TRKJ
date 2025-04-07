@@ -3,7 +3,7 @@ session_start();
 require './db.php';
 
 // Absolute Path
-define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . '/lab/');
+define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] );
 
 // Jika sudah login, langsung redirect
 if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
@@ -14,14 +14,14 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
 function redirect_to_dashboard() {
     switch ($_SESSION['role']) {
         case 'admin':
-            header("Location: " . BASE_URL . "admin/");
+            header("Location: " . BASE_URL . "/admin/");
             break;
         case 'mahasiswa':
-            header("Location: " . BASE_URL . "mahasiswa/");
+            header("Location: " . BASE_URL . "/mahasiswa/");
             break;
         case 'dosen':
         case 'asistendosen':
-            header("Location: " . BASE_URL . "dosen/");
+            header("Location: " . BASE_URL . "/dosen/");
             break;
     }
     exit();
