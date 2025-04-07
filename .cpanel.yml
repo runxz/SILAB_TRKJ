@@ -2,7 +2,5 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/vnmkhosh/public_html
-    - /bin/cp -r * $DEPLOYPATH
-    - /bin/cp -r .[^.]* $DEPLOYPATH 2>/dev/null || true
-    - find $DEPLOYPATH -type f -exec chmod 644 {} \;
-    - find $DEPLOYPATH -type d -exec chmod 755 {} \;
+    - /bin/cp * $DEPLOYPATH  
+
