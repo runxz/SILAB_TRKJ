@@ -16,6 +16,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_laporan'])) {
     $stmt = $conn->prepare("UPDATE laporan SET status = ? WHERE id = ?");
     $stmt->bind_param("si", $status, $laporan_id);
     $stmt->execute();
+    if ($status === 'ditolak' && !empty($_POST['komentar'])) {
+    $komentar = htmlspecialchars($_POST['komentar']);
+    $stmt_komentar = $conn->prepare("INSERT INTO komentar_laporan (laporan_id, user_id, komentar) VALUES (?, ?, ?)");
+    $stmt_komentar->bind_param("iis", $laporan_id, $dosen_id, $komentar);
+    $stmt_komentar->execute();
+}
     header("Location: index.php");
     exit();
 }
@@ -66,61 +72,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['lihat_laporan'])) {
     </form>
 
     <?php if (!empty($laporan)): ?>
-        <h2>Daftar Laporan</h2>
-        <div class="table-container">
-            <table class="styled-table">
-                <tr>
-                    <th>Nama Mahasiswa</th>
-                    <th>Abstrak</th>
-                    <th>Kesimpulan</th>
-                    <th>Gambar</th>
-                    <th>Status</th>
-                    <th>File Laporan</th>
-                    <th>Aksi</th>
-                </tr>
-                <?php while ($row = $laporan->fetch_assoc()): ?>
-                <tr class="<?= $row['status'] ?>">
-                    <td><?= $row['nama_mahasiswa'] ?></td>
-                    <td><?= nl2br($row['abstrak']) ?></td>
-                    <td><?= nl2br($row['kesimpulan']) ?></td>
-                    <td>
-                        <?php if ($row['rangkaian_percobaan']): ?>
-                            <img src="../uploads/laporan/<?= $row['rangkaian_percobaan'] ?>" class="report-image">
-                        <?php endif; ?>
-                        <?php if ($row['hasil_percobaan']): ?>
-                            <img src="../uploads/laporan/<?= $row['hasil_percobaan'] ?>" class="report-image">
-                        <?php endif; ?>
-                    </td>
-                    <td><?= ucfirst($row['status']) ?></td>
-                    <td>
-                        <?php if (!empty($row['pdf_link'])): ?>
-                            <a href="<?= $row['pdf_link'] ?>" class="btn-download" target="_blank">
-                                <i class="fa-solid fa-file-pdf"></i> Unduh Laporan
-                            </a>
-                        <?php else: ?>
-                            <em>Belum tersedia</em>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($row['status'] == 'pending'): ?>
-                            <form method="POST">
-                                <input type="hidden" name="laporan_id" value="<?= $row['id'] ?>">
-                                <select name="status">
-                                    <option value="disetujui">Setujui</option>
-                                    <option value="ditolak">Tolak</option>
-                                </select>
-                                <button type="submit" name="update_laporan" class="btn-edit">Simpan</button>
-                            </form>
-                        <?php else: ?>
-                            <em>Sudah Diproses</em>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </table>
-        </div>
+...
+<h2>Daftar Laporan</h2>
+<div class="table-container">
+    <table class="styled-table">
+        <tr>
+            <th>Nama Mahasiswa</th>
+            <th>Judul</th>
+            <th>Jenis</th>
+            <th>Kesimpulan</th>
+          
+            <th>Lampiran</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+        <?php while ($row = $laporan->fetch_assoc()): ?>
+        <tr class="<?= $row['status'] ?>">
+            <td><?= htmlspecialchars($row['nama_mahasiswa']) ?></td>
+            <td><?= htmlspecialchars($row['laporan']) ?></td>
+            <td><?= ucfirst($row['jenis']) ?></td>
+            <td>
+                <?php if ($row['jenis'] === 'mingguan'): ?>
+                   
+                    <strong>Kesimpulan:</strong> <?= nl2br($row['kesimpulan']) ?>
+                <?php else: ?>
+                    <em>Laporan Akhir</em>
+                <?php endif; ?>
+            </td>
+
+            <td>
+                <?php if (!empty($row['pdf_link'])): ?>
+                    <a href="<?= $row['pdf_link'] ?>" class="btn-download" target="_blank">
+                        <i class="fa-solid fa-file-pdf"></i> Unduh PDF
+                    </a>
+                <?php else: ?>
+                    <em>Tidak tersedia</em>
+                <?php endif; ?>
+            </td>
+            <td><?= ucfirst($row['status']) ?></td>
+<td>
+    <?php if ($row['status'] == 'pending'): ?>
+        <form method="POST">
+            <input type="hidden" name="laporan_id" value="<?= $row['id'] ?>">
+            <select name="status" onchange="toggleKomentarField(this, <?= $row['id'] ?>)">
+                <option value="disetujui">Setujui</option>
+                <option value="ditolak">Tolak</option>
+            </select>
+            <div id="komentar_<?= $row['id'] ?>" style="display: none; margin-top:5px;">
+                <textarea name="komentar" placeholder="Masukkan alasan penolakan" required></textarea>
+            </div>
+            <button type="submit" name="update_laporan" class="btn-edit">Simpan</button>
+        </form>
+    <?php else: ?>
+        <em>Diproses</em>
     <?php endif; ?>
+</td>
+
+        </tr>
+        <?php endwhile; ?>
+    </table>
 </div>
 
+    <?php endif; ?>
+</div>
+<script>
+function toggleKomentarField(select, id) {
+    const komentarBox = document.getElementById("komentar_" + id);
+    komentarBox.style.display = select.value === "ditolak" ? "block" : "none";
+}
+</script>
 </body>
 </html>

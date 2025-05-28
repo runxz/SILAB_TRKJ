@@ -16,49 +16,73 @@ $praktikum = $conn->query("
 
 // Fetch Reports
 $laporan = $conn->query("
-    SELECT l.*, p.nama AS nama_praktikum, l.pdf_link 
+    SELECT l.*, p.nama AS nama_praktikum, l.pdf_link,
+        (SELECT komentar FROM komentar_laporan k WHERE k.laporan_id = l.id ORDER BY waktu DESC LIMIT 1) AS komentar_terakhir
     FROM laporan l
     JOIN praktikum p ON l.praktikum_id = p.id
     WHERE l.mahasiswa_id = $mahasiswa_id
     ORDER BY l.status ASC
 ");
 
+// Fetch Jadwal
+$jadwal_stmt = $conn->prepare("SELECT j.id, j.tanggal, j.waktu 
+  FROM jadwal j 
+  WHERE j.praktikum_id IN (
+    SELECT praktikum_id FROM mahasiswa_praktikum WHERE mahasiswa_id = ?
+  ) ORDER BY j.tanggal ASC");
+$jadwal_stmt->bind_param("i", $mahasiswa_id);
+$jadwal_stmt->execute();
+$jadwal_result = $jadwal_stmt->get_result();
 // Handle Laporan Submission
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $praktikum_id = intval($_POST['praktikum_id']);
-    $abstrak = htmlspecialchars($_POST['abstrak']);
-    $kata_kunci = htmlspecialchars($_POST['kata_kunci']);
-    $pendahuluan = htmlspecialchars($_POST['pendahuluan']);
-    $studi_pustaka = htmlspecialchars($_POST['studi_pustaka']);
-    $peralatan = htmlspecialchars($_POST['peralatan']);
-    $prosedur = htmlspecialchars($_POST['prosedur']);
-    $kesimpulan = htmlspecialchars($_POST['kesimpulan']);
-    $saran = htmlspecialchars($_POST['saran']);
+    $jenis = $_POST['jenis'];
+    $judul = htmlspecialchars($_POST['laporan']);
 
-    // Proses Upload Gambar
-    $rangkaian_percobaan = NULL;
-    $hasil_percobaan = NULL;
+    if ($jenis === 'mingguan' && isset($_POST['kirim_laporan'])) {
 
-    if (!empty($_FILES['rangkaian_percobaan']['name'])) {
-        $rangkaian_percobaan = time() . "_" . basename($_FILES['rangkaian_percobaan']['name']);
-        move_uploaded_file($_FILES['rangkaian_percobaan']['tmp_name'], $upload_dir . $rangkaian_percobaan);
+        $judul = htmlspecialchars($_POST['laporan']);
+        $tujuan = htmlspecialchars($_POST['tujuan_praktikum']);
+        $langkah = htmlspecialchars($_POST['langkah_kerja']);
+        $hasil = htmlspecialchars($_POST['hasil_praktikum']);
+        $pembahasan = htmlspecialchars($_POST['pembahasan']);
+        $kesimpulan = htmlspecialchars($_POST['kesimpulan']);
+        $saran = htmlspecialchars($_POST['saran']);
+        $pustaka = htmlspecialchars($_POST['daftar_pustaka']);
+        $jadwal_id = intval($_POST['jadwal_id']);
+
+        // Cek kehadiran
+$cek = $conn->prepare("SELECT id FROM absensi WHERE mahasiswa_id = ? AND jadwal_id = ? AND hadir IN ('1','2')");
+$cek->bind_param("ii", $mahasiswa_id, $jadwal_id);
+$cek->execute();
+$cek->store_result();
+if ($cek->num_rows == 0) {
+  die("Anda belum hadir di jadwal ini.");
+}
+
+        $stmt = $conn->prepare("INSERT INTO laporan
+    (mahasiswa_id, praktikum_id,jadwal_id, laporan, status, tujuan_praktikum, langkah_kerja, hasil_praktikum, pembahasan, kesimpulan, saran, daftar_pustaka, jenis)
+    VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, 'mingguan')");
+$stmt->bind_param("iiissssssss", $mahasiswa_id, $praktikum_id, $jadwal_id, $judul, $tujuan, $langkah, $hasil, $pembahasan, $kesimpulan, $saran, $pustaka);
+$stmt->execute();
+  
+
+    } elseif ($jenis === 'akhir' && isset($_POST['kirim_laporan_akhir'])) {
+        $pdf_link = time() . "_" . basename($_FILES['laporan_pdf']['name']);
+        move_uploaded_file($_FILES['laporan_pdf']['tmp_name'], $upload_dir . $pdf_link);
+
+        $stmt = $conn->prepare("INSERT INTO laporan 
+            (mahasiswa_id, praktikum_id, laporan, status, pdf_link, jenis) 
+            VALUES (?, ?, ?, 'pending', ?, 'akhir')");
+        $stmt->bind_param("iiss", $mahasiswa_id, $praktikum_id, $judul, $pdf_link);
+        $stmt->execute();
     }
-
-    if (!empty($_FILES['hasil_percobaan']['name'])) {
-        $hasil_percobaan = time() . "_" . basename($_FILES['hasil_percobaan']['name']);
-        move_uploaded_file($_FILES['hasil_percobaan']['tmp_name'], $upload_dir . $hasil_percobaan);
-    }
-
-    $stmt = $conn->prepare("
-        INSERT INTO laporan (mahasiswa_id, praktikum_id, abstrak, kata_kunci, pendahuluan, studi_pustaka, peralatan, prosedur, kesimpulan, saran, rangkaian_percobaan, hasil_percobaan, status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-    ");
-    $stmt->bind_param("iissssssssss", $mahasiswa_id, $praktikum_id, $abstrak, $kata_kunci, $pendahuluan, $studi_pustaka, $peralatan, $prosedur, $kesimpulan, $saran, $rangkaian_percobaan, $hasil_percobaan);
-    $stmt->execute();
 
     header("Location: index.php");
     exit();
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -140,35 +164,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
         </button>
     </div>
 
-    <!-- Form for Creating Reports -->
+        <!-- Form for Creating Reports -->
     <div id="form-section" class="toggle-section form-container">
         <h2>Buat Laporan Praktikum</h2>
-        <form method="POST" enctype="multipart/form-data">
+        <label>Pilih Jenis Laporan:</label>
+<select id="jenis_select" name="jenis" onchange="toggleLaporanForm()" required>
+  <option value="">-- Pilih Jenis Laporan --</option>
+  <option value="mingguan">Mingguan</option>
+  <option value="akhir">Laporan Akhir</option>
+</select>
+
+<div id="form_mingguan" style="display: none;">
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="jenis" value="mingguan">
+
     <label>Pilih Praktikum:</label>
     <select name="praktikum_id" required>
-        <option value="">-- Pilih Praktikum --</option>
-        <?php while ($row = $praktikum->fetch_assoc()): ?>
-            <option value="<?= $row['id'] ?>"><?= $row['nama'] ?></option>
-        <?php endwhile; ?>
+      <option value="">-- Pilih Praktikum --</option>
+      <?php
+        $praktikum->data_seek(0);
+        while ($row = $praktikum->fetch_assoc()):
+      ?>
+        <option value="<?= htmlspecialchars($row['id']) ?>"><?= htmlspecialchars($row['nama']) ?></option>
+      <?php endwhile; ?>
     </select>
+    <label>Pilih Jadwal Pertemuan:</label>
+<select name="jadwal_id" required>
+  <option value="">-- Pilih Jadwal --</option>
+  <?php while ($j = $jadwal_result->fetch_assoc()): ?>
+    <option value="<?= $j['id'] ?>">
+      <?= $j['tanggal'] ?> (<?= $j['waktu'] ?>)
+    </option>
+  <?php endwhile; ?>
+</select>
 
-    <label>Abstrak:</label>
-    <textarea name="abstrak" required></textarea>
+    <label>Judul Laporan:</label>
+    <input type="text" name="laporan" required>
 
-    <label>Kata Kunci:</label>
-    <input type="text" name="kata_kunci" required>
+    <label>Tujuan Praktikum:</label>
+    <textarea name="tujuan_praktikum" required></textarea>
 
-    <label>Pendahuluan:</label>
-    <textarea name="pendahuluan" required></textarea>
+    <label>Langkah Kerja (Flowchart / Screenshoot):</label>
+    <textarea name="langkah_kerja" required></textarea>
 
-    <label>Studi Pustaka:</label>
-    <textarea name="studi_pustaka" required></textarea>
+    <label>Hasil Praktikum:</label>
+    <textarea name="hasil_praktikum" required></textarea>
 
-    <label>Peralatan Percobaan:</label>
-    <textarea name="peralatan" required></textarea>
-
-    <label>Prosedur Percobaan:</label>
-    <textarea name="prosedur" required></textarea>
+    <label>Pembahasan (5 Poin Refleksi & Analisis):</label>
+    <textarea name="pembahasan" required></textarea>
 
     <label>Kesimpulan:</label>
     <textarea name="kesimpulan" required></textarea>
@@ -176,16 +219,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
     <label>Saran:</label>
     <textarea name="saran" required></textarea>
 
-    <label>Rangkaian Percobaan (Gambar):</label>
-    <input type="file" name="rangkaian_percobaan" accept="image/*">
+    <label>Daftar Pustaka (≥5 sumber):</label>
+    <textarea name="daftar_pustaka" required></textarea>
 
-    <label>Hasil Percobaan (Gambar):</label>
-    <input type="file" name="hasil_percobaan" accept="image/*">
+    <button type="submit" name="kirim_laporan" class="btn-add">Kirim Laporan</button>
+  </form>
+</div>
 
-    <button type="submit" name="kirim_laporan" class="btn-add">
-        <i class="fa-solid fa-paper-plane fa-icon"></i> Kirim
-    </button>
+
+<div id="form_akhir" style="display: none;">
+<form method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="jenis" value="akhir">
+  <label>Pilih Praktikum:</label>
+<select name="praktikum_id" required>
+  <option value="">-- Pilih Praktikum --</option>
+  <?php
+    $praktikum->data_seek(0);
+    while ($row = $praktikum->fetch_assoc()):
+  ?>
+    <option value="<?= $row['id'] ?>"><?= $row['nama'] ?></option>
+  <?php endwhile; ?>
+</select>
+
+  <label>Judul Laporan:</label>
+  <input type="text" name="laporan" required>
+
+  <label>Unggah Laporan PDF:</label>
+  <input type="file" name="laporan_pdf" accept="application/pdf" required>
+
+  <button type="submit" name="kirim_laporan_akhir">Kirim</button>
 </form>
+</div>
+
 
     </div>
 
@@ -196,16 +261,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
         <table class="styled-table">
     <tr>
         <th>Nama Praktikum</th>
-        <th>Abstrak</th>
-        <th>Kesimpulan</th>
+        <th>Jenis</th>
+       
+       
         <th>Status</th>
         <th>Aksi</th>
+        <th>Catatan</th>
     </tr>
     <?php while ($row = $laporan->fetch_assoc()): ?>
     <tr>
         <td><?= $row['nama_praktikum'] ?></td>
-        <td><?= substr($row['abstrak'], 0, 50) ?>...</td>
-        <td><?= substr($row['kesimpulan'], 0, 50) ?>...</td>
+        <td><?= ucfirst($row['jenis']) ?></td>
+
         <td><span class="status-<?= $row['status'] ?>"><?= ucfirst($row['status']) ?></span></td>
         <td>
             <a href="<?= $row['pdf_link'] ?>" target="_blank" class="btn-view">
@@ -223,6 +290,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
                 </a>
             <?php endif; ?>
         </td>
+        <td>
+  <?php if ($row['status'] == 'ditolak' && !empty($row['komentar_terakhir'])): ?>
+    <span style="color:red;"><?= htmlspecialchars($row['komentar_terakhir']) ?></span>
+  <?php else: ?>
+    <em>-</em>
+  <?php endif; ?>
+</td>
+
     </tr>
     <?php endwhile; ?>
 </table>
@@ -230,7 +305,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['kirim_laporan'])) {
         </div>
     </div>
 </div>
-
+<script>
+function toggleLaporanForm() {
+  const jenis = document.getElementById("jenis_select").value;
+  document.getElementById("form_mingguan").style.display = jenis === "mingguan" ? "block" : "none";
+  document.getElementById("form_akhir").style.display = jenis === "akhir" ? "block" : "none";
+}
+</script>
 <script>
 function toggleSection(showId, hideId) {
     document.getElementById(showId).style.display = "block";

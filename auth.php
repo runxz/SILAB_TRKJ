@@ -20,16 +20,16 @@ function check_role($allowed_roles) {
 function redirect_to_dashboard() {
     switch ($_SESSION['role']) {
         case 'admin':
-            header("Location: " . BASE_URL . "admin/");
+            header("Location: " . BASE_URL . "/admin/");
             break;
         case 'mahasiswa':
-            header("Location: " . BASE_URL . "mahasiswa/");
+            header("Location: " . BASE_URL . "/mahasiswa/");
             break;
         case 'dosen':
-            header("Location: " . BASE_URL . "dosen/");
+            header("Location: " . BASE_URL . "/dosen/");
             break;
         case 'asistendosen':
-            header("Location: " . BASE_URL . "dosen/");
+            header("Location: " . BASE_URL . "/dosen/");
             break;
     }
     exit();

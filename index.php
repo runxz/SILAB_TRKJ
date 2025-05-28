@@ -14,14 +14,14 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
 function redirect_to_dashboard() {
     switch ($_SESSION['role']) {
         case 'admin':
-            header("Location: " . BASE_URL . "/admin/");
+            header("Location: " . BASE_URL . "/lab/admin/");
             break;
         case 'mahasiswa':
-            header("Location: " . BASE_URL . "/mahasiswa/");
+            header("Location: " . BASE_URL . "/lab/mahasiswa/");
             break;
         case 'dosen':
         case 'asistendosen':
-            header("Location: " . BASE_URL . "/dosen/");
+            header("Location: " . BASE_URL . "/lab/dosen/");
             break;
     }
     exit();

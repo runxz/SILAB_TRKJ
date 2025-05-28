@@ -56,7 +56,11 @@ $dashboard_title = ($user_role == 'dosen') ? "Dashboard Dosen" : "Dashboard Asis
         </a>
         <?php endif; ?>
 
-        <a href="./jadwal/" class="icon-box">
+        <a href="./nilai/" class="icon-box">
+            <i class="fa-solid fa-pencil-square"></i>
+            <span>Nilai</span>
+        </a>
+            <a href="./jadwal/" class="icon-box">
             <i class="fa-solid fa-calendar"></i>
             <span>Kelola Jadwal</span>
         </a>
