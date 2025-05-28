@@ -7,13 +7,16 @@ $success = false;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         $nama = htmlspecialchars(trim($_POST['nama'] ?? ''));
+        $npm = htmlspecialchars(trim($_POST['npm'] ?? ''));
         $email = htmlspecialchars(trim($_POST['email'] ?? ''));
         $passwordRaw = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? '';
 
-        if (empty($nama) || empty($email) || empty($passwordRaw) || empty($role)) {
+        if (empty($nama) || empty($npm) || empty($email) || empty($passwordRaw) || empty($role)) {
             throw new Exception("Semua field harus diisi.");
         }
+
+
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("Email tidak valid.");
@@ -21,25 +24,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $password = password_hash($passwordRaw, PASSWORD_DEFAULT);
 
-        $cekEmail = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        if (!$cekEmail) {
-            throw new Exception("Gagal menyiapkan query pengecekan email.");
+        // Cek duplikat email atau npm
+        $cekDuplikat = $conn->prepare("SELECT id FROM users WHERE email = ? OR npm = ?");
+        if (!$cekDuplikat) {
+            throw new Exception("Gagal menyiapkan query pengecekan duplikat.");
         }
 
-        $cekEmail->bind_param("s", $email);
-        $cekEmail->execute();
-        $cekEmail->store_result();
+        $cekDuplikat->bind_param("ss", $email, $npm);
+        $cekDuplikat->execute();
+        $cekDuplikat->store_result();
 
-        if ($cekEmail->num_rows > 0) {
-            throw new Exception("Email sudah digunakan.");
+        if ($cekDuplikat->num_rows > 0) {
+            throw new Exception("Email atau NPM sudah digunakan.");
         }
 
-        $stmt = $conn->prepare("INSERT INTO users (nama, email, password, role) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO users (nama, npm, email, password, role) VALUES (?, ?, ?, ?, ?)");
         if (!$stmt) {
             throw new Exception("Gagal menyiapkan query penyimpanan.");
         }
 
-        $stmt->bind_param("ssss", $nama, $email, $password, $role);
+        $stmt->bind_param("sssss", $nama, $npm, $email, $password, $role);
         if (!$stmt->execute()) {
             throw new Exception("Registrasi gagal disimpan ke database.");
         }
@@ -52,12 +56,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/loginregister.css">
@@ -74,7 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php endif; ?>
 
     <form method="post" class="login-form">
-        <input type="text" name="nama" placeholder="Nama" required>
+        <input type="text" name="nama" placeholder="Nama Lengkap" required>
+        <input type="text" name="npm" placeholder="NPM (10 digit)" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Password" required>
         <select name="role" required>
@@ -87,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button type="submit" class="btn-login">Register</button>
     </form>
 
-    <p>Login lewat <a href="../">sini</a></p>
+    <p>Sudah punya akun? <a href="../">Login disini</a></p>
 </div>
 
 </body>

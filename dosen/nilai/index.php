@@ -122,6 +122,7 @@ if (isset($_GET['praktikum_id'])) {
 </nav>
 
 <div class="container">
+    
     <h1>Input Nilai Praktikum</h1>
 
     <form method="GET" class="filter-form">
@@ -138,6 +139,7 @@ if (isset($_GET['praktikum_id'])) {
 
 <?php if (!empty($mahasiswa_result) && $mahasiswa_result->num_rows > 0): ?>
     <h2>Mahasiswa</h2>
+     <a href="./rekap_nilai.php" class=""><B class="text-left">Rekap Nilai</B></a>
     <table class="styled-table">
         <tr>
             <th>Nama Mahasiswa</th>

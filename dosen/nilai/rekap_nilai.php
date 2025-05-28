@@ -56,6 +56,7 @@ if (isset($_GET['praktikum_id'])) {
     </style>
 </head>
 <body>
+    <?php require '../../general/back.php';?>
     <div class="container">
         <h1>Rekap Nilai Praktikum</h1>
 
