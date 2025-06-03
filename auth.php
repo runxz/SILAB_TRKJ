@@ -5,7 +5,7 @@ session_start();
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST']);
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
-    header("Location: " . BASE_URL . "index.php");
+    header("Location: " . BASE_URL . "/index.php");
     exit();
 }
 

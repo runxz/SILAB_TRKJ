@@ -167,8 +167,13 @@ while ($row = $result->fetch_assoc()) {
             <input type="text" name="nama" placeholder="Nama Praktikum" required>
             <label>Deskripsi</label>
             <textarea name="deskripsi" placeholder="Deskripsi" required></textarea>
-            <label>Semester:</label>
-<input type="text" name="semester" required>
+<label>Semester:</label>
+<select name="semester" required>
+  <option value="">Pilih Semester</option>
+  <option value="Ganjil">Ganjil</option>
+  <option value="Genap">Genap</option>
+</select>
+
 
 <label>Laboratorium:</label>
 <select name="laboratorium" required>
@@ -193,8 +198,13 @@ while ($row = $result->fetch_assoc()) {
             <input type="hidden" name="praktikum_id" id="edit_praktikum_id">
             <label>Nama Praktikum:</label>
             <input type="text" name="nama" id="edit_nama" placeholder="Nama Praktikum" required>
-            <label>Semester:</label>
-<input type="text" name="semester" id="edit_semester" required>
+<label>Semester:</label>
+<select name="semester" id="edit_semester" required>
+  <option value="">Pilih Semester</option>
+  <option value="Ganjil">Ganjil</option>
+  <option value="Genap">Genap</option>
+</select>
+
 
 <label>Laboratorium:</label>
 <select name="laboratorium" id="edit_laboratorium" required>

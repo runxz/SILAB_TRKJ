@@ -55,14 +55,22 @@ $dashboard_title = ($user_role == 'dosen') ? "Dashboard Dosen" : "Dashboard Asis
             <span>Modul</span>
         </a>
         <?php endif; ?>
+              <?php if ($user_role == 'asistendosen'): // Hide for Asisten Dosen ?>
+            <a href="./seleksi/asdos.php" class="icon-box">
+                <i class="fa-solid fa-book"></i>
+                <span>Daftar Seleksi</span>
+            </a>
+            
+        <?php endif; ?>
 
-        <a href="./nilai/" class="icon-box">
-            <i class="fa-solid fa-pencil-square"></i>
-            <span>Nilai</span>
-        </a>
+
             <a href="./jadwal/" class="icon-box">
             <i class="fa-solid fa-calendar"></i>
             <span>Kelola Jadwal</span>
+        </a>
+                <a href="./peminjaman_labor/" class="icon-box">
+            <i class="fa-solid fa-university"></i>
+            <span>Peminjaman Lab</span>
         </a>
         <a href="./absensi/" class="icon-box">
             <i class="fa-solid fa-clipboard-user"></i>
@@ -72,6 +80,10 @@ $dashboard_title = ($user_role == 'dosen') ? "Dashboard Dosen" : "Dashboard Asis
             <i class="fa-solid fa-file-alt"></i>
             <span>Lihat Laporan</span>
         </a>
+               <a href="./nilai/" class="icon-box">
+            <i class="fa-solid fa-pencil-square"></i>
+            <span>Nilai</span>
+        </a>
         <a href="./dokumentasi/" class="icon-box">
             <i class="fa-solid fa-camera"></i>
             <span>Dokumentasi</span>
@@ -80,13 +92,7 @@ $dashboard_title = ($user_role == 'dosen') ? "Dashboard Dosen" : "Dashboard Asis
             <i class="fa-solid fa-file"></i>
             <span>Tugas Akhir Praktikum</span>
         </a>
-        <?php if ($user_role == 'asistendosen'): // Hide for Asisten Dosen ?>
-            <a href="./seleksi/asdos.php" class="icon-box">
-                <i class="fa-solid fa-book"></i>
-                <span>Daftar Seleksi</span>
-            </a>
-            
-        <?php endif; ?>
+
 
     </div>
 </div>

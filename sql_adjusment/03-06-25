@@ -1,0 +1,18 @@
+CREATE TABLE peminjaman_labor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    laboratorium ENUM(
+        'Laboratorium Embedded System',
+        'Laboratorium Jaringan',
+        'Laboratorium Komputasi',
+        'Laboratorium Server dan Data Center'
+    ) NOT NULL,
+    tanggal DATE NOT NULL,
+    waktu_mulai TIME NOT NULL,
+    waktu_selesai TIME NOT NULL,
+    kegiatan TEXT NOT NULL,
+    status ENUM('menunggu', 'disetujui', 'ditolak') DEFAULT 'menunggu',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+ALTER TABLE peminjaman_labor ADD alasan TEXT NULL;

@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="password" name="password" placeholder="Password" required>
         <select name="role" required>
             <option value="">Pilih Peran</option>
-            <option value="admin">Admin</option>
+          
             <option value="mahasiswa">Mahasiswa</option>
             <option value="dosen">Dosen</option>
             <option value="asistendosen">Asisten Dosen</option>
